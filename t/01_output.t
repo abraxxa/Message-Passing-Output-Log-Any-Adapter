@@ -5,8 +5,11 @@ use Test::More;
 use Test::Exception;
 use Log::Any::Adapter::Util qw( cmp_deeply read_file );
 use Message::Passing::Output::Log::Any::Adapter;
-use Log::Any::Adapter;
 use File::Temp qw( tempfile );
+
+BEGIN {
+    $Log::Any::OverrideDefaultProxyClass = 'Log::Any::Proxy::Test';
+}
 
 subtest 'missing adapter_name' => sub {
     dies_ok { Message::Passing::Output::Log::Any::Adapter->new() }
@@ -16,7 +19,7 @@ subtest 'missing adapter_name' => sub {
 subtest 'without adapter_params' => sub {
     my $output = new_ok(
         'Message::Passing::Output::Log::Any::Adapter' =>
-            [ adapter_name => 'Test::Memory' ],
+            [ adapter_name => 'Test' ],
         'instantiation ok'
     );
 
@@ -27,10 +30,10 @@ subtest 'without adapter_params' => sub {
         category => 'Message::Passing::Output::Log::Any::Adapter' );
 
     cmp_deeply(
-        $log->{msgs},
+        $log->msgs(),
         [   {   level    => 'info',
                 category => 'Message::Passing::Output::Log::Any::Adapter',
-                text     => 'message'
+                message  => 'message'
             }
         ],
         'message appeared in memory'
